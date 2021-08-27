@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+exec >> /var/log/backup_etcd.log
+
+Date=`date +%Y-%m-%d-%H-%M`
+EtcdEndpoints="192.168.3.4:2379"
+EtcdCmd="/usr/bin/etcdctl"
+BackupDir="/home/www/server/backup/etcd"
+BackupFile="snapshot.db.$Date"
+
+echo "`date` backup etcd..."
+
+export ETCDCTL_API=3
+$EtcdCmd --endpoints $EtcdEndpoints snapshot save  $BackupDir/$BackupFile
+
+echo  "`date` backup done!"

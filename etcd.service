@@ -1,0 +1,37 @@
+[Unit]
+Description=Etcd Server
+After=network.target
+After=network-online.target
+Wants=network-online.target
+Documentation=https://github.com/coreos
+
+[Service]
+Type=notify
+WorkingDirectory=/data/etcd/
+ExecStart=/data/etcd/bin/etcd \
+  --name=etcd1 \
+  --cert-file=/data/etcd/ssl/server.pem \
+  --key-file=/data/etcd/ssl/server-key.pem \
+  --peer-cert-file=/data/etcd/ssl/peer.pem \
+  --peer-key-file=/data/etcd/ssl/peer-key.pem \
+  --trusted-ca-file=/data/etcd/ssl/ca.pem \
+  --peer-trusted-ca-file=/data/etcd/ssl/ca.pem \
+  --initial-advertise-peer-urls=https://192.168.3.4:2380 \
+  --listen-peer-urls=https://192.168.3.4:2380 \
+  --listen-client-urls=https://192.168.3.4:2379 \
+  --advertise-client-urls=https://192.168.3.4:2379 \
+  --initial-cluster-token=etcd-cluster-0 \
+  --initial-cluster=etcd1=https://192.168.3.4:2380,etcd2=https://192.168.3.5:2380,etcd3=https://192.168.3.6:2380 \
+  --initial-cluster-state=new \
+  --data-dir=/data/etcd \
+  --snapshot-count=50000 \
+  --auto-compaction-retention=1 \
+  --max-request-bytes=10485760 \
+  --quota-backend-bytes=8589934592
+Restart=always
+RestartSec=15
+LimitNOFILE=65536
+OOMScoreAdjust=-999
+
+[Install]
+WantedBy=multi-user.target

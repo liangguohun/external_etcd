@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# 步骤1 安装
+# ---- 其他节点点生成过可以不执行------------
+wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+
+chmod +x cfssl_linux-amd64 cfssljson_linux-amd64
+
+mv cfssl_linux-amd64 /usr/local/bin/cfssl
+mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
+# ---- 其他节点点生成过可以不执行 end ------------
+# 安装二级制文件
+
+# 步骤2 创建目录
+# 下载
+wget https://storage.googleapis.com/etcd/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
+tar zxf etcd-v3.5.0-linux-amd64.tar.gz
+cd etcd-v3.5.0-linux-amd64
+mv etcd etcdctl /usr/bin/
+cd ../
+mv ./etcd.service /usr/lib/systemd/system/etcd.service
+
+# ---- 其他节点点生成过可以不执行
+
+# 创建ca证书，客户端，服务端，节点之间的证书
+# Etcd属于server ,etcdctl 属于client，二者之间通过http协议进行通信
+# 步骤3 
+mkdir -p /data/etcd/ssl
+mv ./*.json /data/etcd/ssl
+cd /data/etcd/ssl
+
+# 生成CA证书和私钥
+cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+# ls ca*
+# ca-config.json ca.csr ca-csr.json ca-key.pem ca.pem
+
+# 生成客户端证书
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client client.json  | cfssljson -bare client -
+# ls ca*
+# ca-config.json ca.csr ca-csr.json ca-key.pem ca.pem client-key.pem client.pem
+
+# 生成server，peer证书
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=server etcd.json | cfssljson -bare server
+
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=peer etcd.json | cfssljson -bare peer
+# ---- 其他节点点生成过可以不执行 end ------------
+
+# 步骤4
+systemctl daemon-reload
+systemctl enable etcd
+systemctl start etcd
+systemctl status etcd
+
+# 步骤5 
+mkdir -p /etc/kubernetes/pki/etcd/
+#etcd集群的ca证书
+cp /data/etcd/ssl/ca.pem /etc/kubernetes/pki/etcd/
+#etcd集群的client证书，apiserver访问etcd使用
+cp /data/etcd/ssl/client.pem /etc/kubernetes/pki/apiserver-etcd-client.pem
+#etcd集群的client私钥
+cp /data/etcd/ssl/client-key.pem /etc/kubernetes/pki/apiserver-etcd-client-key.pem
+#确保
+tree /etc/kubernetes/pki/

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# 步骤2 创建目录
+mkdir -p /data/etcd/bin
+# 下载
+wget https://storage.googleapis.com/etcd/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
+tar zxf etcd-v3.5.0-linux-amd64.tar.gz
+cd etcd-v3.5.0-linux-amd64
+mv etcd etcdctl /usr/bin/
+cd ../
+mv ./etcd.service /usr/lib/systemd/system/etcd.service
