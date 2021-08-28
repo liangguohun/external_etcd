@@ -5,7 +5,7 @@ exec >> /var/log/backup_etcd.log
 Date=`date +%Y-%m-%d-%H-%M`
 EtcdEndpoints="192.168.3.4:2379"
 EtcdCmd="/usr/bin/etcdctl"
-BackupDir="/home/www/server/backup/etcd"
+BackupDir="/data/backup/etcd"
 BackupFile="snapshot.db.$Date"
 
 echo "`date` backup etcd..."

@@ -33,7 +33,7 @@ cd /data/etcd/ssl
 
 # 备份恢复
 备份脚本 etcd_backup 需要适当修改 通过cronb 定时备份 \
-etcdctl snapshot restore snapshot.db.2021-08-28-10-02 -data-dir /home/www/server/etcd \
+etcdctl snapshot restore snapshot.db.2021-08-28-10-02 -data-dir /data/etcd \
 
 restore： 指定用于恢复的快照文件 \
 -data-dir：恢复到哪个目录
